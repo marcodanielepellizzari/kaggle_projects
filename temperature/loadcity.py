@@ -1,12 +1,14 @@
 #loading script for file GlobalLandTemperaturesByCity.csv
+#header line must be removed from file
+
 
 import cx_Oracle as cx
 import datetime as dt
 import os
-
+import sys
 
 #source and target parameters
-file_name='maxload.csv'
+file_name=sys.argv[1]
 
 username='temperature'
 password='temperature'
@@ -16,6 +18,10 @@ orasid='ORATEST'
 
 os.environ["NLS_LANG"] = "AMERICAN_AMERICA.WE8MSWIN1252"
 
+
+
+#execution parameters
+lines_per_commit=10000
 
 
 #latitude and longitude will be stored in db as float
@@ -47,8 +53,11 @@ def convert_float(string):
 def get_idcountry(curs,data):
 	try:
 		curs.execute("INSERT INTO TEMPERATURE.COUNTRY(COUNTRY) VALUES (:1)",(data['country'],))
+	except cx.DatabaseError as e:
+		if e.code!=1:
+			print(totlines,str(e), line)
 	except Exception as e:
-		#print(str(e))
+		print(totlines,str(e), line)
 		pass
 	finally:
 		curs.execute("SELECT IDCOUNTRY FROM TEMPERATURE.COUNTRY WHERE COUNTRY=:1",(data['country'],))
@@ -60,8 +69,11 @@ def get_idcountry(curs,data):
 def get_idcity(curs,data):
 	try:
 		curs.execute("INSERT INTO TEMPERATURE.CITY(CITY,IDCOUNTRY,LATITUDE,LONGITUDE) VALUES(:city,:idcountry,:latitude,:longitude)",city=data['city'],idcountry=data['idcountry'], latitude=data['latitude'],longitude=data['longitude'])
+	except cx.DatabaseError as e:
+		if e.code!=1:
+			print(totlines,str(e), line)
 	except Exception as e:
-		#print(str(e))
+		print(totlines,str(e), line)
 		pass
 	finally:
 		curs.execute("SELECT IDCITY from TEMPERATURE.CITY where CITY=:city and IDCOUNTRY=:idcountry",city=data['city'],idcountry=data['idcountry'])
@@ -69,14 +81,14 @@ def get_idcity(curs,data):
 
 #open source
 f=open(file_name,'r')
-print("Aperto il file ",file_name )
+print(dt.datetime.now().strftime("%H:%M:%S\t"),"Opened file ",file_name )
 
 
 #open target
 dsn_tns=cx.makedsn(dbserver,port,orasid)
 conn=cx.connect(username,password,dsn_tns)
 cur=conn.cursor()
-print("Aperta connessione al database ", orasid)
+print(dt.datetime.now().strftime("%H:%M:%S\t"),"Opened connection to db ", orasid)
 
 
 
@@ -104,24 +116,24 @@ for line in f:
 		cur.execute("INSERT INTO TEMPERATURE.TEMP_CITY(DATA,TEMPERATURE,ERROR,IDCITY) VALUES(:1,:2,:3,:4)",(data['date'],data['temperature'],data['error'],data['idcity'],))
 		#cur.execute("INSERT INTO TEMPERATURE.TEMP_CITY(DATA,TEMPERATURE,ERROR,IDCITY) VALUES(:date,:temperature,:error,:idcity)",idcity=data['idcity'],date=data['date'],temperature=data['temperature'],error=data['error'])
 	except Exception as e:
-		print("Errore:",str(e),"\nRiga non inserita:",line)
-	
+		print("Error:",str(e),"Row not processed:",line)
+		pass
 	totlines+=1
-	if totlines%10000==0:
+	if totlines%lines_per_commit==0:
 		conn.commit()
-		print("Sono state elaborate ",totlines," righe")
+		print(dt.datetime.now().strftime("%H:%M:%S\t"),"Rows processed: ",totlines)
 conn.commit()
 
-print("Sono state elaborate ",totlines," righe")
-print("Ho finito di inserire le righe")
+print(dt.datetime.now().strftime("%H:%M:%S\t"),"Rows processed: ",totlines)
+print(dt.datetime.now().strftime("%H:%M:%S\t"),"All rows have been processed")
 
 
 #close source
 f.close()
-print("Chiuso il file ", file_name)
+print(dt.datetime.now().strftime("%H:%M:%S\t"),"File closed ", file_name)
 
 #close target
 cur.close()
 conn.close()
-print("Chiusa connessione al database ", orasid)
-print("Script terminato")
+print("Closed connection to db ", orasid)
+print("The end")
