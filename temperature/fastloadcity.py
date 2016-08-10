@@ -82,6 +82,7 @@ def get_idcity(curs,data,old_data):
 			curs.execute("SELECT IDCITY from TEMPERATURE.CITY where CITY=:city and IDCOUNTRY=:idcountry and LATITUDE=:latitude and LONGITUDE=:longitude",city=data['city'],idcountry=data['idcountry'], latitude=data['latitude'],longitude=data['longitude'])
 			old_data['idcity']=curs.fetchone()[0]
 			old_data['idcountry']=data['idcountry']
+			old_data['country']=data['country']
 			old_data['city']=data['city']
 			old_data['latitude']=data['latitude']
 			old_data['longitude']=data['longitude']
