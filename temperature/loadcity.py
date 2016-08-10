@@ -76,7 +76,7 @@ def get_idcity(curs,data):
 		print(totlines,str(e), line)
 		pass
 	finally:
-		curs.execute("SELECT IDCITY from TEMPERATURE.CITY where CITY=:city and IDCOUNTRY=:idcountry",city=data['city'],idcountry=data['idcountry'])
+		curs.execute("SELECT IDCITY from TEMPERATURE.CITY where CITY=:city and IDCOUNTRY=:idcountry and LATITUDE=:latitude and LONGITUDE=:longitude",city=data['city'],idcountry=data['idcountry'], latitude=data['latitude'],longitude=data['longitude'])
 		return curs.fetchone()[0]
 
 #open source
@@ -116,7 +116,7 @@ for line in f:
 		cur.execute("INSERT INTO TEMPERATURE.TEMP_CITY(DATA,TEMPERATURE,ERROR,IDCITY) VALUES(:1,:2,:3,:4)",(data['date'],data['temperature'],data['error'],data['idcity'],))
 		#cur.execute("INSERT INTO TEMPERATURE.TEMP_CITY(DATA,TEMPERATURE,ERROR,IDCITY) VALUES(:date,:temperature,:error,:idcity)",idcity=data['idcity'],date=data['date'],temperature=data['temperature'],error=data['error'])
 	except Exception as e:
-		print("Error:",str(e),"Row not processed:",line)
+		print(totlines, "Error:",str(e),"Row not processed:",line)
 		pass
 	totlines+=1
 	if totlines%lines_per_commit==0:
