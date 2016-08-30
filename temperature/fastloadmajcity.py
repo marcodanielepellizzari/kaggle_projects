@@ -112,7 +112,7 @@ rows=list()
 for line in f:
 	#prepare the required data for insertion
 	data=dict()
-	raw_data=line.split(',')
+	raw_data=line.strip().split(',')
 	data['date']=dt.datetime.strptime(raw_data[0],'%Y-%m-%d')
 	data['temperature']=convert_float(raw_data[1])
 	data['error']=convert_float(raw_data[2])
