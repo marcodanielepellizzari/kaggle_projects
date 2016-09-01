@@ -41,9 +41,10 @@ def get_idcountry(curs,data,old_data):
 	else:
 		try:
 			curs.execute("INSERT INTO TEMPERATURE.COUNTRY(COUNTRY) VALUES (:1)",(data['country'],))
-#		except cx.DatabaseError as e:
-#			if e.code!=1:
-#				print(totlines,str(e), line)
+                except cx.DatabaseError as e:
+                        error, =e.args
+                        if error.code!=1:
+                                print(totlines,"Country",str(e), line)
 		except Exception as e:
 			print(totlines,str(e), line)
 			pass
